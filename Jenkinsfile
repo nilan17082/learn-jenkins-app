@@ -30,13 +30,7 @@ pipeline {
                     reuseNode true
                 }
             }
-                post {
-        always {
-            junit 'jest-results/junit.xml'
-        }
-    }
             steps {
-            
                 sh '''
                 #test -f build/index.html
                 npm test
@@ -60,5 +54,9 @@ pipeline {
             }
         }
     }
-
+    post {
+        always {
+            junit 'jest-results/junit.xml'
+        }
+    }
 }
