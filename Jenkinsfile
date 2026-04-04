@@ -9,9 +9,17 @@ pipeline {
 
     stages {
 
-        stage('Docker') {
+        stage('AWS') {
+            agent {
+                docker {
+                    image 'amazon/aws-cli'
+                    args "--entrypoint=''"
+                }
+            }
             steps {
-                sh 'docker build -t my-playwright .'
+                sh '''
+                    aws --version
+                '''
             }
         }
 
@@ -28,7 +36,7 @@ pipeline {
                     node --version
                     npm --version
                     npm ci
-                    REACT_APP_VERSION=${REACT_APP_VERSION} npm run build
+                    npm run build
                     ls -la
                 '''
             }
@@ -60,15 +68,14 @@ pipeline {
                 stage('E2E') {
                     agent {
                         docker {
-                            image 'mcr.microsoft.com/playwright:v1.58.2-noble'
+                            image 'my-playwright'
                             reuseNode true
                         }
                     }
 
                     steps {
                         sh '''
-                            npm install serve
-                            node_modules/.bin/serve -s build &
+                            serve -s build &
                             sleep 10
                             npx playwright test  --reporter=html
                         '''
@@ -101,7 +108,7 @@ pipeline {
                     echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
                     netlify status
                     netlify deploy --dir=build --json > deploy-output.json
-                    CI_ENVIRONMENT_URL=$(node-jq -r '.deploy_url' deploy-output.json)
+                    CI_ENVIRONMENT_URL=$(jq -r '.deploy_url' deploy-output.json)
                     npx playwright test  --reporter=html
                 '''
             }
