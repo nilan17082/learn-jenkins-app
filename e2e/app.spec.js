@@ -22,6 +22,6 @@ test('has expected app version', async ({ page }) => {
 
   console.log(expectedAppVersion);
 
-  const versionLocator = page.locator(`p:has-text("Application version: ${expectedAppVersion}")`);
-  await expect(versionLocator).toBeVisible();
+  const versionText = `Application version: ${expectedAppVersion}`;
+await expect(page.getByText(versionText, { exact: false })).toBeVisible();
 });
